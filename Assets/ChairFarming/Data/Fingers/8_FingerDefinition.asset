@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Finger
   toeType: 0
   footSide: 2
-  multiplier: 4
-  landingWeight: 4
+  multiplier: 6
+  landingWeight: 12
   sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   animationDefinition: {fileID: 11400000, guid: 2a1e5fbe911a1bf4595404d163b91eee, type: 2}

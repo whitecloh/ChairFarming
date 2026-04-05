@@ -24,8 +24,8 @@ MonoBehaviour:
   valuePerHit: 1
   usesFingerMultiplier: 1
   enabledInOfferPool: 1
-  minHits: 3
-  maxHits: 5
+  minHits: 6
+  maxHits: 18
   bucketBias:
   - 1
   - 1

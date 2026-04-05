@@ -15,7 +15,7 @@ MonoBehaviour:
   id: LOCATION_01
   displayName: Location 1 - Backyard
   theme: {fileID: 11400000, guid: 6b001979bec0224449ccdb14376011d7, type: 2}
-  startMoney: 10
+  startMoney: 400
   enemies:
   - {fileID: 11400000, guid: df915224197e0cb469c4d059329663d7, type: 2}
   - {fileID: 11400000, guid: d27349d76b574ee41b8e5679dc4f4cdc, type: 2}

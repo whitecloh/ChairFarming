@@ -19,13 +19,13 @@ MonoBehaviour:
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   flyingSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   category: 1
-  cost: 2
+  cost: 20
   weight: 5
   valuePerHit: 1
   usesFingerMultiplier: 1
   enabledInOfferPool: 1
-  minHits: 3
-  maxHits: 5
+  minHits: 6
+  maxHits: 18
   bucketBias:
   - 1
   - 1

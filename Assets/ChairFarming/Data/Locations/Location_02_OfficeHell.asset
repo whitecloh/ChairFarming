@@ -15,7 +15,7 @@ MonoBehaviour:
   id: LOCATION_02
   displayName: Location 2 - Office Hell
   theme: {fileID: 11400000, guid: 6b001979bec0224449ccdb14376011d7, type: 2}
-  startMoney: 10
+  startMoney: 400
   enemies:
   - {fileID: 11400000, guid: 63618b40d1d9c7141970e478b98b2dbd, type: 2}
   - {fileID: 11400000, guid: f2ed86ccbd26629438467b67f666cd0c, type: 2}
