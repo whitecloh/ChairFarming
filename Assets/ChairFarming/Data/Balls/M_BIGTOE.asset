@@ -15,13 +15,13 @@ MonoBehaviour:
   id: M_BIGTOE
   displayName: Big Toe Farmer
   shortEffectText: +1 per hit
-  description: 1$ per hit. Big toe x2.
+  description: 2$ per hit. Big toe x2.
   icon: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
   flyingSprite: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
   category: 0
   cost: 40
   weight: 5
-  valuePerHit: 1
+  valuePerHit: 2
   usesFingerMultiplier: 1
   enabledInOfferPool: 1
   bucketBias:

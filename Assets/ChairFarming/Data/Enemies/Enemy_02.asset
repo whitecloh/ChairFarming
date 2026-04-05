@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: ENEMY_02
   displayName: Orko
-  maxHp: 2500
+  maxHp: 300
   icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
   bodySprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   animationDefinition: {fileID: 11400000, guid: 5ecd039a24286db458fe51aee08705c4, type: 2}
