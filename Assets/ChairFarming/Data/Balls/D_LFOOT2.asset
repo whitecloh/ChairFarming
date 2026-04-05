@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D_LFOOT2
   m_EditorClassIdentifier: 
   id: D_LFOOT2
-  displayName: Left Foot Hit
+  displayName: Left Foot Lacerator
   shortEffectText: +1 per hit
   description: 2 dmg per hit. Left foot x2.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}

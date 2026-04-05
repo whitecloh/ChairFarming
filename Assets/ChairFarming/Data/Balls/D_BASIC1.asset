@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D_BASIC1
   m_EditorClassIdentifier: 
   id: D_BASIC1
-  displayName: Basic Hit
+  displayName: Pain Pancake
   shortEffectText: +1 per hit
   description: 1 dmg per hit. Multiplies on toe.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}

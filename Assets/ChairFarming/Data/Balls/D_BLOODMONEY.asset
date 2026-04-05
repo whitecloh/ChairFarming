@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D_BLOODMONEY
   m_EditorClassIdentifier: 
   id: D_BLOODMONEY
-  displayName: Bloodmoney
+  displayName: Bankrupt Bludgeon
   shortEffectText: +1 per hit
   description: Lose 1$ per hit. Deal hits x toe x 5.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}

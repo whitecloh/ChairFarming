@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D_BIGTOE
   m_EditorClassIdentifier: 
   id: D_BIGTOE
-  displayName: Big Toe Hit
+  displayName: Thumb Breaker
   shortEffectText: +1 per hit
   description: 1 dmg per hit. Big toe x2.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}

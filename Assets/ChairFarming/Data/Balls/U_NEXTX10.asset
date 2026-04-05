@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: U_NEXTX10
   m_EditorClassIdentifier: 
   id: U_NEXTX10
-  displayName: Next x10
+  displayName: Bounce Butler
   shortEffectText: +1 per hit
   description: Arms x10 for the next launched ball.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}

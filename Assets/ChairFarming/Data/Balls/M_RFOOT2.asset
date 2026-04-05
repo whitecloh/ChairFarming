@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: M_RFOOT2
   m_EditorClassIdentifier: 
   id: M_RFOOT2
-  displayName: Right Foot Farmer
+  displayName: Right Foot Millionaire
   shortEffectText: +1 per hit
   description: 2$ per hit. Right foot x2.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}

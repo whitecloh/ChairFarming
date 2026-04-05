@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D_COMBO20
   m_EditorClassIdentifier: 
   id: D_COMBO20
-  displayName: Combo 20+
+  displayName: Late Bloomer
   shortEffectText: +1 per hit
   description: If hits >= 20, final damage x3.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}

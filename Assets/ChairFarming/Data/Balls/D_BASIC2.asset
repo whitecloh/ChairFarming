@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: D_BASIC2
   m_EditorClassIdentifier: 
   id: D_BASIC2
-  displayName: Heavy Hit
+  displayName: Double Whack
   shortEffectText: +1 per hit
   description: 2 dmg per hit. Multiplies on toe.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
