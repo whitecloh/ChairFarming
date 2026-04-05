@@ -9,6 +9,7 @@ namespace ChairFarming.Runtime.App
         public static AudioService Instance { get; private set; }
 
         [SerializeField] private AudioSource musicSource;
+        [SerializeField] private AudioSource sfxSource;
 
         private SettingsService _settingsService;
         private AudioClip _currentMusic;
@@ -29,8 +30,17 @@ namespace ChairFarming.Runtime.App
                 musicSource = GetComponent<AudioSource>();
             }
 
+            if (sfxSource == null)
+            {
+                GameObject sfxObject = new GameObject("SfxSource");
+                sfxObject.transform.SetParent(transform, false);
+                sfxSource = sfxObject.AddComponent<AudioSource>();
+            }
+
             musicSource.playOnAwake = false;
             musicSource.loop = true;
+            sfxSource.playOnAwake = false;
+            sfxSource.loop = false;
         }
 
         public void Initialize(SettingsService settingsService)
@@ -43,13 +53,19 @@ namespace ChairFarming.Runtime.App
 
         public void ApplySettings(float volume, bool isMuted)
         {
-            if (musicSource == null)
+            float clamped = Mathf.Clamp01(volume);
+
+            if (musicSource != null)
             {
-                return;
+                musicSource.mute = isMuted;
+                musicSource.volume = clamped;
             }
 
-            musicSource.mute = isMuted;
-            musicSource.volume = Mathf.Clamp01(volume);
+            if (sfxSource != null)
+            {
+                sfxSource.mute = isMuted;
+                sfxSource.volume = clamped;
+            }
         }
 
         public void PlayMusic(AudioClip clip)
@@ -67,6 +83,16 @@ namespace ChairFarming.Runtime.App
             _currentMusic = clip;
             musicSource.clip = clip;
             musicSource.Play();
+        }
+
+        public void PlaySfx(AudioClip clip, float volumeScale = 1f)
+        {
+            if (sfxSource == null || clip == null)
+            {
+                return;
+            }
+
+            sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeScale));
         }
 
         public void StopMusic()

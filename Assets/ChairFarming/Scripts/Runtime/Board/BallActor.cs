@@ -81,40 +81,37 @@ namespace ChairFarming.Runtime.Board
                 RoutePoint previousPoint = plan.Points[i - 1];
                 RoutePoint nextPoint = plan.Points[i];
 
-                bool isImpactApproach = nextPoint.PointType == RoutePointType.PinImpact;
-                bool isImpactRebound = previousPoint.PointType == RoutePointType.PinImpact;
-                bool isFingerLanding = nextPoint.PointType == RoutePointType.FingerLand;
-
-                float distance = Vector2.Distance(previousPoint.Position, nextPoint.Position);
-                float durationMultiplier = GetDurationMultiplier(previousPoint.PointType, nextPoint.PointType);
-                float duration = Mathf.Max(0.04f, segmentBaseDuration * Mathf.Clamp(distance * durationMultiplier, 0.7f, 2.0f));
-
-                if (isImpactRebound)
-                {
-                    yield return MoveBounceSegment(previousPoint.Position, nextPoint.Position, duration);
-                }
-                else
-                {
-                    yield return MoveStandardSegment(previousPoint.Position, nextPoint.Position, duration, isImpactApproach, isFingerLanding);
-                }
-
                 switch (nextPoint.PointType)
                 {
-                    case RoutePointType.PinImpact:
+                    case RoutePointType.GatePass:
+                        yield return PlayGateCrossSegment(previousPoint.Position, nextPoint.Position, segmentBaseDuration);
                         PlayedImpacts++;
                         onPinImpact?.Invoke(nextPoint.PinId);
-
-                        yield return PlayImpactSquash();
-
-                        if (_balanceConfig != null && _balanceConfig.ImpactPause > 0f)
-                        {
-                            yield return new WaitForSeconds(_balanceConfig.ImpactPause);
-                        }
                         break;
 
                     case RoutePointType.FingerLand:
+                        yield return PlayFingerLanding(previousPoint.Position, nextPoint.Position, segmentBaseDuration);
                         onFingerLand?.Invoke(nextPoint.FingerIndex);
                         transform.localScale = _baseScale;
+                        break;
+
+                    default:
+                        bool fromGate = previousPoint.PointType == RoutePointType.GatePass;
+                        bool toFingerEntry = nextPoint.PointType == RoutePointType.FingerEntry;
+                        bool lateFingerApproach = i < plan.Points.Count - 2 && plan.Points[i + 1].PointType == RoutePointType.FingerEntry;
+
+                        if (fromGate)
+                        {
+                            yield return PlayPostGateFall(previousPoint.Position, nextPoint.Position, segmentBaseDuration);
+                        }
+                        else if (toFingerEntry || lateFingerApproach)
+                        {
+                            yield return PlayFingerApproach(previousPoint.Position, nextPoint.Position, segmentBaseDuration);
+                        }
+                        else
+                        {
+                            yield return PlayFallSegment(previousPoint.Position, nextPoint.Position, segmentBaseDuration);
+                        }
                         break;
                 }
             }
@@ -122,37 +119,104 @@ namespace ChairFarming.Runtime.Board
             onCompleted?.Invoke(PlayedImpacts, plan.TargetFingerIndex);
         }
 
-        private float GetDurationMultiplier(RoutePointType fromType, RoutePointType toType)
+        private IEnumerator PlayFallSegment(Vector2 start, Vector2 end, float segmentBaseDuration)
         {
-            if (_balanceConfig == null)
-            {
-                return 1f;
-            }
+            float distance = Vector2.Distance(start, end);
+            float duration = Mathf.Max(0.055f, segmentBaseDuration * Mathf.Clamp(distance * 0.90f, 0.72f, 1.18f));
+            float gravity = 13.0f;
 
-            if (toType == RoutePointType.PinImpact)
-            {
-                return _balanceConfig.ImpactApproachDurationMultiplier;
-            }
-
-            if (fromType == RoutePointType.PinImpact)
-            {
-                return _balanceConfig.ImpactReboundDurationMultiplier;
-            }
-
-            if (toType == RoutePointType.FingerLand)
-            {
-                return _balanceConfig.FingerLandingDurationMultiplier;
-            }
-
-            return _balanceConfig.NormalMoveDurationMultiplier;
+            yield return PlayBallisticSegment(start, end, duration, gravity, SegmentPresentation.Fall);
         }
 
-        private IEnumerator MoveStandardSegment(Vector2 start, Vector2 end, float duration, bool isImpactApproach, bool isFingerLanding)
+        private IEnumerator PlayGateCrossSegment(Vector2 start, Vector2 end, float segmentBaseDuration)
         {
-            Vector2 p1;
-            Vector2 p2;
-            BuildStandardControlPoints(start, end, isImpactApproach, isFingerLanding, out p1, out p2);
+            float distance = Vector2.Distance(start, end);
+            float duration = Mathf.Max(0.042f, segmentBaseDuration * Mathf.Clamp(distance * 0.68f, 0.48f, 0.84f));
 
+            Vector2 p1 = Vector2.Lerp(start, end, 0.34f);
+            Vector2 p2 = Vector2.Lerp(start, end, 0.72f);
+
+            float vertical = Mathf.Abs(end.y - start.y);
+            float passDepth = Mathf.Clamp(0.02f + vertical * 0.02f, 0.012f, 0.045f);
+
+            p1 += new Vector2((end.x - start.x) * 0.02f, -passDepth * 0.40f);
+            p2 += new Vector2((end.x - start.x) * 0.01f, -passDepth);
+
+            yield return PlayBezierSegment(start, p1, p2, end, duration, SegmentPresentation.GateCross);
+        }
+
+        private IEnumerator PlayPostGateFall(Vector2 start, Vector2 end, float segmentBaseDuration)
+        {
+            float distance = Vector2.Distance(start, end);
+            float duration = Mathf.Max(0.050f, segmentBaseDuration * Mathf.Clamp(distance * 0.84f, 0.66f, 1.02f));
+            float gravity = 14.0f;
+
+            yield return PlayBallisticSegment(start, end, duration, gravity, SegmentPresentation.PostGateFall);
+        }
+
+        private IEnumerator PlayFingerApproach(Vector2 start, Vector2 end, float segmentBaseDuration)
+        {
+            float distance = Vector2.Distance(start, end);
+            float duration = Mathf.Max(0.070f, segmentBaseDuration * Mathf.Clamp(distance * 0.92f, 0.76f, 1.10f));
+            float gravity = 11.5f;
+
+            yield return PlayBallisticSegment(start, end, duration, gravity, SegmentPresentation.FingerApproach);
+        }
+
+        private IEnumerator PlayFingerLanding(Vector2 start, Vector2 end, float segmentBaseDuration)
+        {
+            float distance = Vector2.Distance(start, end);
+            float duration = Mathf.Max(0.080f, segmentBaseDuration * Mathf.Clamp(distance * 0.98f, 0.82f, 1.16f));
+            float gravity = 10.0f;
+
+            yield return PlayBallisticSegment(start, end, duration, gravity, SegmentPresentation.FingerLanding);
+        }
+
+        private IEnumerator PlayBallisticSegment(
+            Vector2 start,
+            Vector2 end,
+            float duration,
+            float gravity,
+            SegmentPresentation presentation)
+        {
+            float elapsed = 0f;
+            Vector2 previousPosition = start;
+
+            float deltaX = end.x - start.x;
+            float deltaY = end.y - start.y;
+
+            float velocityX = deltaX / duration;
+            float velocityY = (deltaY + 0.5f * gravity * duration * duration) / duration;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp(elapsed, 0f, duration);
+                float normalizedTime = Mathf.Clamp01(t / duration);
+
+                float x = start.x + velocityX * t;
+                float y = start.y + velocityY * t - 0.5f * gravity * t * t;
+
+                Vector2 currentPosition = new Vector2(x, y);
+                transform.position = currentPosition;
+
+                ApplyPresentation(previousPosition, currentPosition, normalizedTime, presentation);
+                previousPosition = currentPosition;
+                yield return null;
+            }
+
+            transform.position = end;
+            transform.localScale = _baseScale;
+        }
+
+        private IEnumerator PlayBezierSegment(
+            Vector2 start,
+            Vector2 p1,
+            Vector2 p2,
+            Vector2 end,
+            float duration,
+            SegmentPresentation presentation)
+        {
             float elapsed = 0f;
             Vector2 previousPosition = start;
 
@@ -165,40 +229,7 @@ namespace ChairFarming.Runtime.Board
                 Vector2 currentPosition = EvaluateCubicBezier(start, p1, p2, end, eased);
                 transform.position = currentPosition;
 
-                ApplyRotation(previousPosition, currentPosition, 0.9f);
-                previousPosition = currentPosition;
-                yield return null;
-            }
-
-            transform.position = end;
-        }
-
-        private IEnumerator MoveBounceSegment(Vector2 start, Vector2 end, float duration)
-        {
-            float elapsed = 0f;
-            Vector2 previousPosition = start;
-
-            float arcHeight = Mathf.Max(0.08f, Mathf.Min(0.22f, Mathf.Abs(end.x - start.x) * 0.35f + 0.10f));
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-
-                float x = Mathf.Lerp(start.x, end.x, EaseOutQuad(t));
-                float linearY = Mathf.Lerp(start.y, end.y, t);
-                float arcY = Mathf.Sin(t * Mathf.PI) * arcHeight;
-
-                Vector2 currentPosition = new Vector2(x, linearY + arcY);
-                transform.position = currentPosition;
-
-                float stretch = Mathf.Lerp(1.03f, 0.99f, t);
-                transform.localScale = new Vector3(
-                    _baseScale.x * (2f - stretch),
-                    _baseScale.y * stretch,
-                    _baseScale.z);
-
-                ApplyRotation(previousPosition, currentPosition, 1.0f);
+                ApplyPresentation(previousPosition, currentPosition, t, presentation);
                 previousPosition = currentPosition;
                 yield return null;
             }
@@ -207,41 +238,58 @@ namespace ChairFarming.Runtime.Board
             transform.localScale = _baseScale;
         }
 
-        private IEnumerator PlayImpactSquash()
+        private void ApplyPresentation(Vector2 previousPosition, Vector2 currentPosition, float normalizedTime, SegmentPresentation presentation)
         {
-            if (_balanceConfig == null)
+            Vector2 delta = currentPosition - previousPosition;
+            if (delta.sqrMagnitude <= 0.000001f)
             {
-                yield break;
+                transform.localScale = _baseScale;
+                return;
             }
 
-            float duration = Mathf.Max(0.001f, _balanceConfig.ImpactSquashDuration * 0.65f);
-            Vector3 squashScale = new Vector3(
-                _baseScale.x * Mathf.Lerp(1f, _balanceConfig.ImpactSquashX, 0.65f),
-                _baseScale.y * Mathf.Lerp(1f, _balanceConfig.ImpactSquashY, 0.65f),
+            float speed = delta.magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
+            float stretchBySpeed = Mathf.Clamp01(speed * 0.042f);
+
+            float xScale = 1f;
+            float yScale = 1f;
+
+            switch (presentation)
+            {
+                case SegmentPresentation.Fall:
+                    xScale = Mathf.Lerp(1.01f, 0.98f, stretchBySpeed);
+                    yScale = Mathf.Lerp(0.995f, 1.05f, stretchBySpeed);
+                    break;
+
+                case SegmentPresentation.GateCross:
+                    xScale = Mathf.Lerp(1.00f, 1.03f, normalizedTime * 0.6f);
+                    yScale = Mathf.Lerp(1.00f, 0.97f, normalizedTime * 0.6f);
+                    break;
+
+                case SegmentPresentation.PostGateFall:
+                    xScale = Mathf.Lerp(1.00f, 0.985f, stretchBySpeed);
+                    yScale = Mathf.Lerp(1.00f, 1.04f, stretchBySpeed);
+                    break;
+
+                case SegmentPresentation.FingerApproach:
+                    xScale = Mathf.Lerp(1.00f, 1.02f, normalizedTime * 0.35f);
+                    yScale = Mathf.Lerp(1.00f, 0.98f, normalizedTime * 0.35f);
+                    break;
+
+                case SegmentPresentation.FingerLanding:
+                    xScale = Mathf.Lerp(1.00f, 1.05f, normalizedTime);
+                    yScale = Mathf.Lerp(1.00f, 0.93f, normalizedTime);
+                    break;
+            }
+
+            transform.localScale = new Vector3(
+                _baseScale.x * xScale,
+                _baseScale.y * yScale,
                 _baseScale.z);
 
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                transform.localScale = Vector3.Lerp(_baseScale, squashScale, t);
-                yield return null;
-            }
-
-            elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                transform.localScale = Vector3.Lerp(squashScale, _baseScale, t);
-                yield return null;
-            }
-
-            transform.localScale = _baseScale;
+            ApplyRotation(previousPosition, currentPosition, presentation);
         }
 
-        private void ApplyRotation(Vector2 previousPosition, Vector2 currentPosition, float boost)
+        private void ApplyRotation(Vector2 previousPosition, Vector2 currentPosition, SegmentPresentation presentation)
         {
             Vector2 frameVelocity = currentPosition - previousPosition;
             if (frameVelocity.sqrMagnitude <= 0.000001f)
@@ -250,52 +298,33 @@ namespace ChairFarming.Runtime.Board
             }
 
             float signedRotation = Mathf.Sign(frameVelocity.x == 0f ? 1f : frameVelocity.x);
+
+            float boost = 1f;
+            switch (presentation)
+            {
+                case SegmentPresentation.Fall:
+                    boost = 0.88f;
+                    break;
+                case SegmentPresentation.GateCross:
+                    boost = 0.92f;
+                    break;
+                case SegmentPresentation.PostGateFall:
+                    boost = 0.86f;
+                    break;
+                case SegmentPresentation.FingerApproach:
+                    boost = 0.82f;
+                    break;
+                case SegmentPresentation.FingerLanding:
+                    boost = 0.68f;
+                    break;
+            }
+
             transform.Rotate(0f, 0f, -signedRotation * _spinSpeed * boost * Time.deltaTime);
-        }
-
-        private void BuildStandardControlPoints(
-            Vector2 start,
-            Vector2 end,
-            bool isImpactApproach,
-            bool isFingerLanding,
-            out Vector2 p1,
-            out Vector2 p2)
-        {
-            Vector2 delta = end - start;
-            float vertical = Mathf.Abs(delta.y);
-
-            p1 = Vector2.Lerp(start, end, 0.33f);
-            p2 = Vector2.Lerp(start, end, 0.66f);
-
-            if (isImpactApproach)
-            {
-                float dropDepth = Mathf.Clamp(0.05f + vertical * 0.05f, 0.03f, 0.10f);
-                p1 += new Vector2(delta.x * 0.02f, -dropDepth);
-                p2 += new Vector2(delta.x * 0.005f, -dropDepth * 0.15f);
-                return;
-            }
-
-            if (isFingerLanding)
-            {
-                float settle = Mathf.Clamp(0.04f + vertical * 0.04f, 0.02f, 0.08f);
-                p1 += new Vector2(delta.x * 0.015f, -settle * 0.05f);
-                p2 += new Vector2(delta.x * 0.005f, -settle);
-                return;
-            }
-
-            float softDrop = Mathf.Clamp(0.03f + vertical * 0.04f, 0.02f, 0.08f);
-            p1 += new Vector2(delta.x * 0.015f, -softDrop);
-            p2 += new Vector2(delta.x * 0.005f, -softDrop * 0.15f);
         }
 
         private static float EaseInOutSmooth(float t)
         {
             return t * t * (3f - 2f * t);
-        }
-
-        private static float EaseOutQuad(float t)
-        {
-            return 1f - (1f - t) * (1f - t);
         }
 
         private static Vector2 EvaluateCubicBezier(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
@@ -306,6 +335,15 @@ namespace ChairFarming.Runtime.Board
                    3f * oneMinusT * oneMinusT * t * p1 +
                    3f * oneMinusT * t * t * p2 +
                    t * t * t * p3;
+        }
+
+        private enum SegmentPresentation
+        {
+            Fall = 0,
+            GateCross = 1,
+            PostGateFall = 2,
+            FingerApproach = 3,
+            FingerLanding = 4,
         }
     }
 }

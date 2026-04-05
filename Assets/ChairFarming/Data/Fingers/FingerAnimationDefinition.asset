@@ -15,18 +15,18 @@ MonoBehaviour:
   idle:
     id: idle
     frames:
-    - {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: 1670571015, guid: 2c7cf00666c1ca040abd7666e803e6cc, type: 3}
     fps: 8
     loop: 1
   hit:
     id: hit
     frames:
-    - {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: -928056966, guid: 2c7cf00666c1ca040abd7666e803e6cc, type: 3}
     fps: 8
     loop: 0
   highlight:
     id: highlight
     frames:
-    - {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: 493372153, guid: 2c7cf00666c1ca040abd7666e803e6cc, type: 3}
     fps: 8
     loop: 0

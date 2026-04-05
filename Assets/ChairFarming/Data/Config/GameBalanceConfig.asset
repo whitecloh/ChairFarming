@@ -18,27 +18,27 @@ MonoBehaviour:
   comboThreshold: 20
   comboMultiplier: 3
   nextBallMultiplier: 10
-  routeNoise: 0
-  segmentBaseDuration: 0.03
-  impactApproachDurationMultiplier: 0.4
-  impactReboundDurationMultiplier: 0.4
-  normalMoveDurationMultiplier: 1
+  routeNoise: 0.45
+  segmentBaseDuration: 0.1
+  impactApproachDurationMultiplier: 0.9
+  impactReboundDurationMultiplier: 0.95
+  normalMoveDurationMultiplier: 0.9
   fingerLandingDurationMultiplier: 0.95
-  pinReboundHeight: 0.2
-  pinReboundSideOffset: 0.02
-  pinReboundExitSideOffset: 0.12
-  pinReboundExitDrop: 0.01
+  pinReboundHeight: 0.18
+  pinReboundSideOffset: 0.1
+  pinReboundExitSideOffset: 0.16
+  pinReboundExitDrop: 0.18
   impactPause: 0
-  impactSquashX: 1
-  impactSquashY: 1
+  impactSquashX: 1.08
+  impactSquashY: 0.92
   impactSquashDuration: 0.02
-  ballSpinSpeed: 1
-  utilityBallSpinSpeed: 300
+  ballSpinSpeed: 150
+  utilityBallSpinSpeed: 210
   useBoardRowCountAsMinimumHits: 1
   minimumHitsOverride: 9
   minimumExtraBounces: 0
-  maximumExtraBounces: 6
-  resolvePause: 1
+  maximumExtraBounces: 4
+  resolvePause: 0.45
   resultPopupDuration: 2
   showDebugOverlay: 1
   drawRouteGizmos: 1

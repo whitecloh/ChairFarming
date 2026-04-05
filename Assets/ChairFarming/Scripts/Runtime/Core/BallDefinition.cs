@@ -22,8 +22,6 @@ namespace ChairFarming.Runtime.Core
         [SerializeField] private bool enabledInOfferPool = true;
 
         [Header("Controlled Drop")]
-        [SerializeField] private int minHits = 8;
-        [SerializeField] private int maxHits = 14;
         [SerializeField] private float[] bucketBias = new float[10];
 
         [Header("Proc")]
@@ -52,8 +50,6 @@ namespace ChairFarming.Runtime.Core
         public int ValuePerHit => valuePerHit;
         public bool UsesFingerMultiplier => usesFingerMultiplier;
         public bool EnabledInOfferPool => enabledInOfferPool;
-        public int MinHits => minHits;
-        public int MaxHits => maxHits;
         public float[] BucketBias => bucketBias;
         public float ProcChance => procChance;
         public int ProcMultiplier => procMultiplier;
@@ -69,8 +65,6 @@ namespace ChairFarming.Runtime.Core
             cost = Mathf.Max(0, cost);
             weight = Mathf.Max(1, weight);
             valuePerHit = Mathf.Max(0, valuePerHit);
-            minHits = Mathf.Max(1, minHits);
-            maxHits = Mathf.Max(minHits, maxHits);
             procMultiplier = Mathf.Max(1, procMultiplier);
             toeBonusMultiplier = Mathf.Max(1, toeBonusMultiplier);
             footBonusMultiplier = Mathf.Max(1, footBonusMultiplier);

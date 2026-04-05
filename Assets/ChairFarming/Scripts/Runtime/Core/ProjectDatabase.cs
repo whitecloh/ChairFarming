@@ -8,9 +8,12 @@ namespace ChairFarming.Runtime.Core
         [SerializeField] private GameBalanceConfig gameBalanceConfig;
         [SerializeField] private BallDefinition[] balls;
         [SerializeField] private LocationDefinition[] locations;
+        [SerializeField] private AudioCueLibrary audioCueLibrary;
 
         public GameBalanceConfig GameBalanceConfig => gameBalanceConfig;
         public BallDefinition[] Balls => balls;
         public LocationDefinition[] Locations => locations;
+        
+        public AudioCueLibrary AudioCueLibrary => audioCueLibrary;
     }
 }

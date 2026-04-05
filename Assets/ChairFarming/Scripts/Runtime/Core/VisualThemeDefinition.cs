@@ -12,8 +12,6 @@ namespace ChairFarming.Runtime.Core
         [SerializeField] private Sprite rerollButtonIcon;
         [SerializeField] private Sprite menuBackgroundSprite;
         [SerializeField] private Sprite menuCardSprite;
-        [SerializeField] private AudioClip menuMusic;
-        [SerializeField] private AudioClip battleMusic;
 
         public string Id => id;
         public Sprite BoardBackgroundSprite => boardBackgroundSprite;
@@ -22,7 +20,5 @@ namespace ChairFarming.Runtime.Core
         public Sprite RerollButtonIcon => rerollButtonIcon;
         public Sprite MenuBackgroundSprite => menuBackgroundSprite;
         public Sprite MenuCardSprite => menuCardSprite;
-        public AudioClip MenuMusic => menuMusic;
-        public AudioClip BattleMusic => battleMusic;
     }
 }

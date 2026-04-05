@@ -185,10 +185,7 @@ namespace ChairFarming.Runtime.Menu
                 backgroundImage.sprite = theme != null ? theme.MenuBackgroundSprite : null;
             }
 
-            if (AudioService.Instance != null && theme != null && theme.MenuMusic != null)
-            {
-                AudioService.Instance.PlayMusic(theme.MenuMusic);
-            }
+            AudioService.Instance.PlayMusic(projectDatabase.AudioCueLibrary.MenuMusic);
         }
 
         private int GetDefaultSelectedLocationIndex()

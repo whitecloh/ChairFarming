@@ -48,7 +48,7 @@ namespace ChairFarming.Runtime.Board
                 return plan;
             }
 
-            int[] impactsPerRow = BuildImpactDistribution(rows.Count, targetHitCount, random);
+            int[] passesPerRow = BuildPassDistribution(rows.Count, targetHitCount, random);
 
             Vector2 currentPosition = startPoint;
             float targetFingerX = targetFinger.LandingPoint.position.x;
@@ -64,122 +64,114 @@ namespace ChairFarming.Runtime.Board
                     continue;
                 }
 
-                int rowImpacts = Mathf.Max(1, impactsPerRow[rowIndex]);
+                int rowPasses = Mathf.Max(1, passesPerRow[rowIndex]);
 
                 float rowProgress = totalRows > 1
                     ? passedRows / (float)(totalRows - 1)
                     : 1f;
 
                 float guidedTargetX = Mathf.Lerp(startPoint.x, targetFingerX, rowProgress);
+                float desiredX = Mathf.Lerp(currentPosition.x, guidedTargetX, Mathf.Lerp(0.22f, 0.92f, rowProgress));
 
-                float earlyFreedom = Mathf.Lerp(0.15f, 1f, rowProgress);
-                float desiredX = Mathf.Lerp(currentPosition.x, guidedTargetX, earlyFreedom);
-
-                float noiseStrength = Mathf.Lerp(1.35f, 0.55f, rowProgress);
+                float noiseStrength = Mathf.Lerp(0.90f, 0.28f, rowProgress);
                 float noise = ((float)random.NextDouble() * 2f - 1f) * _balanceConfig.RouteNoise * noiseStrength;
                 desiredX += noise;
 
-                BoardPinPoint chosenPin = PickBestPin(row, currentPosition.x, desiredX);
+                GateData chosenGate = PickBestGate(row, currentPosition.x, desiredX);
 
-                float nextDesiredX = rowIndex >= rows.Count - 1
-                    ? targetFingerX
-                    : Mathf.Lerp(startPoint.x, targetFingerX, (passedRows + 1f) / Mathf.Max(1f, totalRows - 1f));
+                float gateWidth = Mathf.Max(0.12f, Vector2.Distance(chosenGate.Left.WorldPosition, chosenGate.Right.WorldPosition));
+                float entryHeight = Mathf.Lerp(0.28f, 0.16f, rowProgress);
+                float exitDrop = Mathf.Lerp(0.12f, 0.18f, rowProgress);
+                float weaveAmount = Mathf.Clamp(gateWidth * 0.18f, 0.03f, 0.08f);
 
-                int direction = nextDesiredX >= chosenPin.WorldPosition.x ? 1 : -1;
+                Vector2 gateCenter = chosenGate.Center;
+                Vector2 gateEntry = gateCenter + Vector2.up * entryHeight;
+                Vector2 gateExit = gateCenter + Vector2.down * exitDrop;
 
-                Vector2 driftPoint = new Vector2(
-                    Mathf.Lerp(currentPosition.x, chosenPin.WorldPosition.x, 0.25f),
-                    chosenPin.WorldPosition.y + 0.70f);
+                Vector2 fallGuide = new Vector2(
+                    Mathf.Lerp(currentPosition.x, gateEntry.x, 0.30f),
+                    gateEntry.y + 0.18f);
 
-                Vector2 firstApproach = chosenPin.WorldPosition + new Vector2(-direction * 0.10f, 0.16f);
-
-                if (Vector2.Distance(currentPosition, driftPoint) > 0.01f)
+                if (Vector2.Distance(currentPosition, fallGuide) > 0.01f)
                 {
-                    plan.Points.Add(new RoutePoint(driftPoint, RoutePointType.Move));
+                    plan.Points.Add(new RoutePoint(fallGuide, RoutePointType.Move));
                 }
 
-                if (Vector2.Distance(driftPoint, firstApproach) > 0.01f)
+                if (Vector2.Distance(fallGuide, gateEntry) > 0.01f)
                 {
-                    plan.Points.Add(new RoutePoint(firstApproach, RoutePointType.Move));
+                    plan.Points.Add(new RoutePoint(gateEntry, RoutePointType.Move));
                 }
 
-                for (int localImpactIndex = 0; localImpactIndex < rowImpacts; localImpactIndex++)
+                for (int localPassIndex = 0; localPassIndex < rowPasses; localPassIndex++)
                 {
-                    Vector2 impact = chosenPin.WorldPosition + new Vector2(-direction * 0.008f, 0.008f);
-                    plan.Points.Add(new RoutePoint(impact, RoutePointType.PinImpact, chosenPin.PinId));
-
-                    bool isLastImpactOnRow = localImpactIndex >= rowImpacts - 1;
-                    if (isLastImpactOnRow)
+                    if (localPassIndex > 0)
                     {
-                        Vector2 rebound = chosenPin.WorldPosition + new Vector2(
-                            direction * _balanceConfig.PinReboundSideOffset,
-                            _balanceConfig.PinReboundHeight);
+                        float side = localPassIndex % 2 == 0 ? -1f : 1f;
 
-                        Vector2 exit = chosenPin.WorldPosition + new Vector2(
-                            direction * _balanceConfig.PinReboundExitSideOffset,
-                            -_balanceConfig.PinReboundExitDrop);
+                        Vector2 loopHigh = gateCenter + new Vector2(side * weaveAmount, entryHeight * 0.72f);
+                        Vector2 loopLow = gateCenter + new Vector2(-side * weaveAmount * 0.85f, -exitDrop * 0.28f);
 
-                        plan.Points.Add(new RoutePoint(rebound, RoutePointType.Move));
-                        plan.Points.Add(new RoutePoint(exit, RoutePointType.Move));
-                        currentPosition = exit;
+                        plan.Points.Add(new RoutePoint(loopHigh, RoutePointType.Move));
+                        plan.Points.Add(new RoutePoint(loopLow, RoutePointType.Move));
+                    }
+
+                    plan.Points.Add(new RoutePoint(gateCenter, RoutePointType.GatePass, rowIndex));
+
+                    bool isLastPassOnRow = localPassIndex >= rowPasses - 1;
+                    if (isLastPassOnRow)
+                    {
+                        plan.Points.Add(new RoutePoint(gateExit, RoutePointType.Move));
+                        currentPosition = gateExit;
                     }
                     else
                     {
-                        float repeatedHeight = _balanceConfig.PinReboundHeight + 0.03f * localImpactIndex;
-
-                        Vector2 reboundUp = chosenPin.WorldPosition + new Vector2(
-                            direction * (_balanceConfig.PinReboundSideOffset * 0.75f),
-                            repeatedHeight);
-
-                        Vector2 reApproach = chosenPin.WorldPosition + new Vector2(
-                            -direction * 0.07f,
-                            0.10f);
-
-                        plan.Points.Add(new RoutePoint(reboundUp, RoutePointType.Move));
-                        plan.Points.Add(new RoutePoint(reApproach, RoutePointType.Move));
-
-                        currentPosition = reApproach;
+                        float side = localPassIndex % 2 == 0 ? 1f : -1f;
+                        Vector2 reEntry = gateCenter + new Vector2(side * weaveAmount, entryHeight * 0.52f);
+                        plan.Points.Add(new RoutePoint(reEntry, RoutePointType.Move));
+                        currentPosition = reEntry;
                     }
                 }
 
                 passedRows++;
             }
 
-            Vector2 preFinger = (Vector2)targetFinger.EntryPoint.position + new Vector2(0f, 0.22f);
+            Vector2 preFingerHigh = (Vector2)targetFinger.EntryPoint.position + new Vector2(0f, 0.32f);
+            Vector2 preFingerLow = (Vector2)targetFinger.EntryPoint.position + new Vector2(0f, 0.14f);
             Vector2 fingerEntry = targetFinger.EntryPoint.position;
             Vector2 fingerLand = targetFinger.LandingPoint.position;
 
-            plan.Points.Add(new RoutePoint(preFinger, RoutePointType.Move));
+            plan.Points.Add(new RoutePoint(preFingerHigh, RoutePointType.Move));
+            plan.Points.Add(new RoutePoint(preFingerLow, RoutePointType.Move));
             plan.Points.Add(new RoutePoint(fingerEntry, RoutePointType.FingerEntry, -1, targetFingerIndex));
             plan.Points.Add(new RoutePoint(fingerLand, RoutePointType.FingerLand, -1, targetFingerIndex));
 
             return plan;
         }
 
-        private static int[] BuildImpactDistribution(int rowCount, int targetHitCount, System.Random random)
+        private static int[] BuildPassDistribution(int rowCount, int targetPassCount, System.Random random)
         {
             int safeRowCount = Mathf.Max(1, rowCount);
-            int safeTargetHitCount = Mathf.Max(safeRowCount, targetHitCount);
+            int safeTargetPassCount = Mathf.Max(safeRowCount, targetPassCount);
 
-            int[] impactsPerRow = new int[safeRowCount];
+            int[] passesPerRow = new int[safeRowCount];
 
             for (int i = 0; i < safeRowCount; i++)
             {
-                impactsPerRow[i] = 1;
+                passesPerRow[i] = 1;
             }
 
-            int extraHits = safeTargetHitCount - safeRowCount;
+            int extraPasses = safeTargetPassCount - safeRowCount;
 
-            for (int i = 0; i < extraHits; i++)
+            for (int i = 0; i < extraPasses; i++)
             {
-                int selectedRow = PickExtraBounceRow(safeRowCount, random);
-                impactsPerRow[selectedRow]++;
+                int selectedRow = PickExtraPassRow(safeRowCount, random);
+                passesPerRow[selectedRow]++;
             }
 
-            return impactsPerRow;
+            return passesPerRow;
         }
 
-        private static int PickExtraBounceRow(int rowCount, System.Random random)
+        private static int PickExtraPassRow(int rowCount, System.Random random)
         {
             if (rowCount <= 1)
             {
@@ -192,33 +184,84 @@ namespace ChairFarming.Runtime.Board
             {
                 float normalized = rowCount > 1 ? i / (float)(rowCount - 1) : 0f;
                 float centerBias = 1f - Mathf.Abs(normalized - 0.5f) * 2f;
-                float lowerBias = Mathf.Lerp(0.8f, 1.25f, normalized);
+                float lowerBias = Mathf.Lerp(0.85f, 1.20f, normalized);
 
-                weights.Add(Mathf.Max(0.05f, 0.7f + centerBias * 0.6f + lowerBias));
+                weights.Add(Mathf.Max(0.05f, 0.72f + centerBias * 0.55f + lowerBias));
             }
 
             return WeightedRandomUtility.PickIndex(weights, random);
         }
 
-        private static BoardPinPoint PickBestPin(List<BoardPinPoint> row, float currentX, float desiredX)
+        private static GateData PickBestGate(List<BoardPinPoint> row, float currentX, float desiredX)
         {
-            BoardPinPoint best = row[0];
+            List<GateData> gates = BuildGates(row);
+
+            if (gates.Count == 0)
+            {
+                BoardPinPoint fallback = row[0];
+                GateData singleGate = new GateData(fallback, fallback);
+                return singleGate;
+            }
+
+            GateData best = gates[0];
             float bestScore = float.MaxValue;
 
-            for (int i = 0; i < row.Count; i++)
+            for (int i = 0; i < gates.Count; i++)
             {
                 float score =
-                    Mathf.Abs(row[i].WorldPosition.x - desiredX) +
-                    Mathf.Abs(row[i].WorldPosition.x - currentX) * 0.12f;
+                    Mathf.Abs(gates[i].Center.x - desiredX) +
+                    Mathf.Abs(gates[i].Center.x - currentX) * 0.10f;
 
                 if (score < bestScore)
                 {
                     bestScore = score;
-                    best = row[i];
+                    best = gates[i];
                 }
             }
 
             return best;
+        }
+
+        private static List<GateData> BuildGates(List<BoardPinPoint> row)
+        {
+            List<GateData> gates = new List<GateData>();
+
+            if (row == null || row.Count == 0)
+            {
+                return gates;
+            }
+
+            if (row.Count == 1)
+            {
+                gates.Add(new GateData(row[0], row[0]));
+                return gates;
+            }
+
+            for (int i = 0; i < row.Count - 1; i++)
+            {
+                if (row[i] == null || row[i + 1] == null)
+                {
+                    continue;
+                }
+
+                gates.Add(new GateData(row[i], row[i + 1]));
+            }
+
+            return gates;
+        }
+
+        private readonly struct GateData
+        {
+            public readonly BoardPinPoint Left;
+            public readonly BoardPinPoint Right;
+            public readonly Vector2 Center;
+
+            public GateData(BoardPinPoint left, BoardPinPoint right)
+            {
+                Left = left;
+                Right = right;
+                Center = (left.WorldPosition + right.WorldPosition) * 0.5f;
+            }
         }
     }
 }

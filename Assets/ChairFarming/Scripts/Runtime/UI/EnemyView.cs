@@ -15,8 +15,11 @@ namespace ChairFarming.Runtime.UI
         [SerializeField] private Image hpFillImage;
         [SerializeField] private TextMeshProUGUI hpText;
         [SerializeField] private EnemyAnimator enemyAnimator;
+        [SerializeField] private RectTransform damageTargetAnchor;
 
         private EnemyDefinition _currentEnemy;
+
+        public RectTransform DamageTargetAnchor => damageTargetAnchor != null ? damageTargetAnchor : bodyImage != null ? bodyImage.rectTransform : null;
 
         public void ApplyEnemy(EnemyDefinition enemy)
         {

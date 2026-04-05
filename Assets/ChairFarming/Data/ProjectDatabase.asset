@@ -32,3 +32,4 @@ MonoBehaviour:
   locations:
   - {fileID: 11400000, guid: 219cc5d8e94126540a1e19c84ea06a99, type: 2}
   - {fileID: 11400000, guid: 6ccc174f29fba284c92164c4fd58c38b, type: 2}
+  audioCueLibrary: {fileID: 11400000, guid: 63d5fb9569a09224b9e1e2cce6fb4e3a, type: 2}

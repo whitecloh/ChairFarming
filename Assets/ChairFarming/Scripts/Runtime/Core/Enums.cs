@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace ChairFarming.Runtime.Core
 {
     public enum BallCategory
@@ -50,5 +48,6 @@ namespace ChairFarming.Runtime.Core
         PinImpact = 1,
         FingerEntry = 2,
         FingerLand = 3,
+        GatePass = 4,
     }
 }

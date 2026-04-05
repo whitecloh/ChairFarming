@@ -1,4 +1,5 @@
 using System.Collections;
+using ChairFarming.Runtime.App;
 using ChairFarming.Runtime.Board;
 using ChairFarming.Runtime.Core;
 using UnityEngine;
@@ -18,6 +19,7 @@ namespace ChairFarming.Runtime.Battle
 
         private System.Random _random;
         private Coroutine _advanceRoutine;
+        private int _flightGatePassCount;
 
         public void Initialize(BattleContext context)
         {
@@ -57,6 +59,12 @@ namespace ChairFarming.Runtime.Battle
         private void StartLocation()
         {
             _state.CurrentEnemyIndex = 0;
+
+            _state.CurrentMoney = Mathf.Clamp(
+                _context.Location != null ? _context.Location.StartMoney : 0,
+                0,
+                _context.BalanceConfig.MaxMoney);
+
             StartEnemyBattle();
         }
 
@@ -69,7 +77,6 @@ namespace ChairFarming.Runtime.Battle
                 return;
             }
 
-            _state.CurrentMoney = _context.Location.StartMoney;
             _state.CurrentEnemyHp = enemy.MaxHp;
             _state.RerollCount = 0;
             _state.PendingNextBallMultiplier = 1;
@@ -107,6 +114,9 @@ namespace ChairFarming.Runtime.Battle
                 return;
             }
 
+            PlaySfx(_context.AudioCueLibrary != null ? _context.AudioCueLibrary.Purchase : null);
+            ShowSpendPopup(ball.Cost);
+
             _state.SelectedBall = ball;
             _state.CurrentAimNormalizedX = 0.5f;
             _state.Phase = BattlePhase.AwaitLaunchPosition;
@@ -135,6 +145,9 @@ namespace ChairFarming.Runtime.Battle
                 return;
             }
 
+            _flightGatePassCount = 0;
+            _context.FlightCounterView.Show();
+
             _state.CurrentAimNormalizedX = Mathf.Clamp01(normalizedX);
             _state.Phase = BattlePhase.BallInFlight;
             _state.IsDropInProgress = true;
@@ -154,21 +167,31 @@ namespace ChairFarming.Runtime.Battle
             _context.BoardView.PlayDrop(
                 _state.PlannedDrop,
                 _context.BalanceConfig.SegmentBaseDuration,
-                HandlePinImpact,
+                HandleGatePassed,
                 HandleFingerLand,
                 HandleDropCompleted);
         }
 
-        private void HandlePinImpact(int pinId)
+        private void HandleGatePassed(int gateId)
         {
-            BoardPinPoint pin = _context.BoardView.GetPinById(pinId);
-            _context.ImpactPresenter.PresentPinImpact(pin);
+            _flightGatePassCount++;
+            _context.FlightCounterView.Increment();
+            PlaySfx(_context.AudioCueLibrary != null ? _context.AudioCueLibrary.GatePass : null, 0.8f);
         }
 
         private void HandleFingerLand(int fingerIndex)
         {
             FingerSlotView finger = _context.BoardView.GetFingerSlot(fingerIndex);
+            if (finger == null)
+            {
+                return;
+            }
+
+            FingerRuntimeInfo fingerInfo = finger.GetRuntimeInfo();
+            _context.FlightCounterView.ShowResolve(fingerInfo.Multiplier);
             _context.ImpactPresenter.PresentFingerLanding(finger);
+
+            PlaySfx(_context.AudioCueLibrary != null ? _context.AudioCueLibrary.FingerLand : null);
         }
 
         private void HandleDropCompleted(int playedImpacts, int landedFingerIndex)
@@ -192,6 +215,9 @@ namespace ChairFarming.Runtime.Battle
             _context.ResultPopupView.Show(resolution, _context.BalanceConfig.ResultPopupDuration);
             _context.EnemyView.RefreshHp(GetCurrentEnemy(), _state.CurrentEnemyHp);
             _context.EnemyView.PlayHitOrDeath(_state.CurrentEnemyHp <= 0);
+
+            PlayResultFlyouts(landedFingerIndex, resolution);
+            PlayResolutionSfx(resolution);
 
             if (_advanceRoutine != null)
             {
@@ -268,11 +294,16 @@ namespace ChairFarming.Runtime.Battle
                 return;
             }
 
+            int rerollCost = _economyService.GetRerollCost(_state.RerollCount);
+
             if (!_economyService.TrySpendReroll(_state))
             {
                 RefreshAllViews();
                 return;
             }
+
+            PlaySfx(_context.AudioCueLibrary != null ? _context.AudioCueLibrary.Reroll : null);
+            ShowSpendPopup(rerollCost);
 
             RegenerateOffers();
             RefreshAllViews();
@@ -358,6 +389,8 @@ namespace ChairFarming.Runtime.Battle
             _state.Phase = BattlePhase.DefeatWindow;
             RefreshAllViews();
 
+            PlaySfx(_context.AudioCueLibrary != null ? _context.AudioCueLibrary.Defeat : null);
+
             _context.LostWindowView.Show(
                 GetCurrentEnemy(),
                 RetryLocation,
@@ -375,6 +408,7 @@ namespace ChairFarming.Runtime.Battle
             _context.LocationEndWindowView.HideImmediate();
             _context.LostWindowView.HideImmediate();
             _context.TooltipView.Hide();
+            _context.FlightCounterView.ResetImmediate();
         }
 
         private void RetryLocation()
@@ -396,6 +430,90 @@ namespace ChairFarming.Runtime.Battle
 
             int index = Mathf.Clamp(_state.CurrentEnemyIndex, 0, _context.Location.Enemies.Length - 1);
             return _context.Location.Enemies[index];
+        }
+
+        private void ShowSpendPopup(int amount)
+        {
+            if (_context.ResultFlyoutPresenter == null || _context.HudView == null || amount <= 0)
+            {
+                return;
+            }
+
+            RectTransform anchor = _context.HudView.SpendPopupAnchor;
+            RectTransform target = _context.HudView.MoneyTargetAnchor;
+
+            if (anchor != null && target != null)
+            {
+                _context.ResultFlyoutPresenter.PlayFromUiToUi(anchor, target, "-" + amount);
+            }
+        }
+
+        private void PlayResultFlyouts(int landedFingerIndex, BallResolutionData resolution)
+        {
+            if (_context.ResultFlyoutPresenter == null || resolution == null)
+            {
+                return;
+            }
+
+            FingerSlotView finger = _context.BoardView.GetFingerSlot(landedFingerIndex);
+            if (finger == null || finger.LandingPoint == null)
+            {
+                return;
+            }
+
+            Vector3 worldSource = finger.LandingPoint.position;
+
+            if (resolution.MoneyDelta != 0 && _context.HudView != null && _context.HudView.MoneyTargetAnchor != null)
+            {
+                _context.ResultFlyoutPresenter.PlayFromWorldToUi(
+                    worldSource,
+                    _context.HudView.MoneyTargetAnchor,
+                    FormatSigned(resolution.MoneyDelta));
+            }
+
+            if (resolution.DamageDelta != 0 && _context.EnemyView != null && _context.EnemyView.DamageTargetAnchor != null)
+            {
+                _context.ResultFlyoutPresenter.PlayFromWorldToUi(
+                    worldSource,
+                    _context.EnemyView.DamageTargetAnchor,
+                    FormatSigned(-resolution.DamageDelta));
+            }
+        }
+
+        private void PlayResolutionSfx(BallResolutionData resolution)
+        {
+            if (resolution == null || _context.AudioCueLibrary == null)
+            {
+                return;
+            }
+
+            if (resolution.MoneyDelta > 0)
+            {
+                PlaySfx(_context.AudioCueLibrary.MoneyGain);
+            }
+
+            if (resolution.DamageDelta > 0)
+            {
+                PlaySfx(_context.AudioCueLibrary.EnemyHit);
+            }
+
+            if (_state.CurrentEnemyHp <= 0)
+            {
+                PlaySfx(_context.AudioCueLibrary.EnemyDeath);
+            }
+        }
+
+        private void PlaySfx(AudioClip clip, float volumeScale = 1f)
+        {
+            if (AudioService.Instance != null && clip != null)
+            {
+                AudioService.Instance.PlaySfx(clip, volumeScale);
+            }
+        }
+
+        private static string FormatSigned(int value)
+        {
+            return value > 0 ? "+" + value : value.ToString();
         }
     }
 }

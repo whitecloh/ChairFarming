@@ -11,6 +11,11 @@ namespace ChairFarming.Runtime.UI
         [SerializeField] private TextMeshProUGUI pendingText;
         [SerializeField] private TextMeshProUGUI stateText;
         [SerializeField] private TextMeshProUGUI debugText;
+        [SerializeField] private RectTransform moneyTargetAnchor;
+        [SerializeField] private RectTransform spendPopupAnchor;
+
+        public RectTransform MoneyTargetAnchor => moneyTargetAnchor != null ? moneyTargetAnchor : moneyText != null ? moneyText.rectTransform : null;
+        public RectTransform SpendPopupAnchor => spendPopupAnchor != null ? spendPopupAnchor : moneyText != null ? moneyText.rectTransform : null;
 
         public void Refresh(int money, string locationName, int currentEnemyIndex, int totalEnemies, int pendingMultiplier, string stateLabel, string debugLabel)
         {

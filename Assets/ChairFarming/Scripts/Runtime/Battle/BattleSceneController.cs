@@ -23,6 +23,11 @@ namespace ChairFarming.Runtime.Battle
         [SerializeField] private EnemyDeathWindowView enemyDeathWindowView;
         [SerializeField] private LocationEndWindowView locationEndWindowView;
         [SerializeField] private LostWindowView lostWindowView;
+        [SerializeField] private FlightCounterView flightCounterView;
+        [SerializeField] private ResultFlyoutPresenter resultFlyoutPresenter;
+
+        [Header("Audio")]
+        [SerializeField] private AudioCueLibrary audioCueLibrary;
 
         private BattleFlowController _battleFlowController;
 
@@ -47,6 +52,7 @@ namespace ChairFarming.Runtime.Battle
                 BalanceConfig = session.ProjectDatabase.GameBalanceConfig,
                 Location = session.GetSelectedLocation(),
                 RunProgressService = new RunProgressService(),
+                AudioCueLibrary = audioCueLibrary,
                 BoardView = boardView,
                 BoardInput = boardViewportInput,
                 ImpactPresenter = impactPresenter,
@@ -60,6 +66,8 @@ namespace ChairFarming.Runtime.Battle
                 EnemyDeathWindowView = enemyDeathWindowView,
                 LocationEndWindowView = locationEndWindowView,
                 LostWindowView = lostWindowView,
+                FlightCounterView = flightCounterView,
+                ResultFlyoutPresenter = resultFlyoutPresenter,
             };
 
             if (!ValidateContext(context))
@@ -68,9 +76,9 @@ namespace ChairFarming.Runtime.Battle
                 return;
             }
 
-            if (AudioService.Instance != null && context.Location.Theme != null && context.Location.Theme.BattleMusic != null)
+            if (AudioService.Instance != null && context.Location.Theme != null && context.AudioCueLibrary.MenuMusic != null)
             {
-                AudioService.Instance.PlayMusic(context.Location.Theme.BattleMusic);
+                AudioService.Instance.PlayMusic(context.AudioCueLibrary.MenuMusic);
             }
 
             _battleFlowController = gameObject.AddComponent<BattleFlowController>();
@@ -92,6 +100,8 @@ namespace ChairFarming.Runtime.Battle
                 context.EnemyDeathWindowView != null &&
                 context.LocationEndWindowView != null &&
                 context.LostWindowView != null &&
+                context.FlightCounterView != null &&
+                context.ResultFlyoutPresenter != null &&
                 context.Database != null &&
                 context.BalanceConfig != null &&
                 context.Location != null;

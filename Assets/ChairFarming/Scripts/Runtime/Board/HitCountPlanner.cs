@@ -16,6 +16,7 @@ namespace ChairFarming.Runtime.Board
                 : Mathf.Max(1, balanceConfig.MinimumHitsOverride);
 
             float centerBias = 1f - Mathf.Abs(launchNormalizedX - 0.5f) * 2f;
+            centerBias = Mathf.Clamp01(centerBias);
 
             int extraMin = Mathf.Max(0, balanceConfig.MinimumExtraBounces);
             int extraMax = Mathf.Max(extraMin, balanceConfig.MaximumExtraBounces);
