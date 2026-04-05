@@ -28,6 +28,11 @@ namespace ChairFarming.Runtime.Battle
 
         private void Awake()
         {
+            if (boardView != null)
+            {
+                boardView.InitializeRuntimeLayout();
+            }
+
             GameSession session = GameSession.Instance;
             if (session == null || session.ProjectDatabase == null || !session.HasSelectedLocation)
             {

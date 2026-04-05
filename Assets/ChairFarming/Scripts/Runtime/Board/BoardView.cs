@@ -29,6 +29,8 @@ namespace ChairFarming.Runtime.Board
         [SerializeField] private float rowGroupingTolerance = 0.18f;
 
         private readonly List<List<BoardPinPoint>> _rows = new List<List<BoardPinPoint>>();
+        private readonly Dictionary<int, BoardPinPoint> _pinById = new Dictionary<int, BoardPinPoint>();
+
         private BallActor _aimBall;
 
         public Transform PreviewSpawnAnchor => previewSpawnAnchor;
@@ -37,7 +39,15 @@ namespace ChairFarming.Runtime.Board
 
         private void Awake()
         {
-            RebuildRows();
+            InitializeRuntimeLayout();
+        }
+
+        public void InitializeRuntimeLayout()
+        {
+            CollectPins();
+            CollectFingers();
+            BuildRowsAndAssignIds();
+            BuildPinCache();
         }
 
         public void ApplyLocation(LocationDefinition location)
@@ -110,20 +120,8 @@ namespace ChairFarming.Runtime.Board
 
         public BoardPinPoint GetPinById(int pinId)
         {
-            if (pins == null)
-            {
-                return null;
-            }
-
-            for (int i = 0; i < pins.Length; i++)
-            {
-                if (pins[i] != null && pins[i].PinId == pinId)
-                {
-                    return pins[i];
-                }
-            }
-
-            return null;
+            BoardPinPoint pin;
+            return _pinById.TryGetValue(pinId, out pin) ? pin : null;
         }
 
         public void ResetFingerPresentation()
@@ -233,13 +231,16 @@ namespace ChairFarming.Runtime.Board
             return Vector3.Lerp(launchLeftAnchor.position, launchRightAnchor.position, normalizedX);
         }
 
-        public void AutoCollectLayout()
+        private void CollectPins()
         {
             if (pinsRoot != null)
             {
                 pins = pinsRoot.GetComponentsInChildren<BoardPinPoint>(true);
             }
+        }
 
+        private void CollectFingers()
+        {
             if (fingersRoot != null)
             {
                 fingerSlots = fingersRoot
@@ -247,10 +248,14 @@ namespace ChairFarming.Runtime.Board
                     .OrderBy(slot => slot.transform.position.x)
                     .ToArray();
             }
+        }
+
+        private void BuildRowsAndAssignIds()
+        {
+            _rows.Clear();
 
             if (pins == null || pins.Length == 0)
             {
-                _rows.Clear();
                 return;
             }
 
@@ -260,11 +265,9 @@ namespace ChairFarming.Runtime.Board
                 .ThenBy(pin => pin.transform.localPosition.x)
                 .ToList();
 
-            _rows.Clear();
-
             float currentRowY = float.NaN;
             int currentRowIndex = -1;
-            int pinId = 0;
+            int nextPinId = 0;
 
             for (int i = 0; i < orderedPins.Count; i++)
             {
@@ -278,8 +281,7 @@ namespace ChairFarming.Runtime.Board
                     _rows.Add(new List<BoardPinPoint>());
                 }
 
-                List<BoardPinPoint> currentRow = _rows[currentRowIndex];
-                currentRow.Add(pin);
+                _rows[currentRowIndex].Add(pin);
             }
 
             for (int rowIndex = 0; rowIndex < _rows.Count; rowIndex++)
@@ -290,42 +292,38 @@ namespace ChairFarming.Runtime.Board
 
                 for (int columnIndex = 0; columnIndex < _rows[rowIndex].Count; columnIndex++)
                 {
-                    _rows[rowIndex][columnIndex].SetIds(pinId, rowIndex, columnIndex);
-                    pinId++;
+                    _rows[rowIndex][columnIndex].SetIds(nextPinId, rowIndex, columnIndex);
+                    nextPinId++;
                 }
             }
 
             pins = _rows.SelectMany(row => row).ToArray();
         }
 
-        public void RebuildRows()
+        private void BuildPinCache()
         {
-            _rows.Clear();
+            _pinById.Clear();
 
-            if (pins == null || pins.Length == 0)
+            if (pins == null)
             {
                 return;
             }
 
-            List<BoardPinPoint> orderedPins = pins
-                .Where(pin => pin != null)
-                .OrderBy(pin => pin.RowIndex)
-                .ThenBy(pin => pin.ColumnIndex)
-                .ToList();
-
-            int currentRow = -1;
-            List<BoardPinPoint> currentList = null;
-
-            for (int i = 0; i < orderedPins.Count; i++)
+            for (int i = 0; i < pins.Length; i++)
             {
-                if (orderedPins[i].RowIndex != currentRow)
+                if (pins[i] == null)
                 {
-                    currentRow = orderedPins[i].RowIndex;
-                    currentList = new List<BoardPinPoint>();
-                    _rows.Add(currentList);
+                    continue;
                 }
 
-                currentList.Add(orderedPins[i]);
+                int id = pins[i].PinId;
+                if (_pinById.ContainsKey(id))
+                {
+                    Debug.LogError("BoardView: duplicate pin id detected: " + id + " on " + pins[i].name);
+                    continue;
+                }
+
+                _pinById.Add(id, pins[i]);
             }
         }
 
@@ -352,7 +350,8 @@ namespace ChairFarming.Runtime.Board
         {
             if (!Application.isPlaying)
             {
-                AutoCollectLayout();
+                CollectPins();
+                CollectFingers();
             }
         }
 #endif

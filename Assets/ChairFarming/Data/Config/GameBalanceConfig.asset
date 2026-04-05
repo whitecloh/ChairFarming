@@ -18,7 +18,7 @@ MonoBehaviour:
   comboThreshold: 20
   comboMultiplier: 3
   nextBallMultiplier: 10
-  routeNoise: 0.45
+  routeNoise: 0.3
   segmentBaseDuration: 0.095
   resolvePause: 0.45
   resultPopupDuration: 2

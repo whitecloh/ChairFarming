@@ -1,5 +1,6 @@
 using ChairFarming.Runtime.Board;
 using ChairFarming.Runtime.Core;
+using UnityEngine;
 
 namespace ChairFarming.Runtime.Battle
 {
@@ -34,6 +35,12 @@ namespace ChairFarming.Runtime.Battle
                 ball,
                 launchNormalizedX,
                 random);
+
+            int maxUsefulHits = boardView != null && boardView.Rows != null
+                ? Mathf.Max(2, boardView.Rows.Count - 2)
+                : 2;
+
+            hitCount = Mathf.Clamp(hitCount, 2, maxUsefulHits);
 
             return _routePlanner.BuildPlan(boardView, ball, launchNormalizedX, fingerIndex, hitCount, routeSeed);
         }
