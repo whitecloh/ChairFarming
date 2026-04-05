@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemy_05
   m_EditorClassIdentifier: 
   id: ENEMY_05
-  displayName: Backyard Freak 5
+  displayName: Just a Boss
   maxHp: 14000
   icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
   bodySprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}

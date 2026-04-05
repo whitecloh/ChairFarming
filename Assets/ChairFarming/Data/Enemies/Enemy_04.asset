@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemy_04
   m_EditorClassIdentifier: 
   id: ENEMY_04
-  displayName: Backyard Freak 4
+  displayName: Galina
   maxHp: 7000
   icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
   bodySprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
