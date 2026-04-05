@@ -111,7 +111,7 @@ namespace ChairFarming.Runtime.Battle
             _state.CurrentAimNormalizedX = 0.5f;
             _state.Phase = BattlePhase.AwaitLaunchPosition;
 
-            _context.BoardView.ShowAimingBall(ball, _state.CurrentAimNormalizedX);
+            _context.BoardView.ShowAimingBall(ball, _state.CurrentAimNormalizedX, _context.BalanceConfig);
             _context.BoardInput.SetInteractable(true);
             _context.ScreenBlockerView.Show("Кликни по полю, чтобы сбросить шар");
             RefreshAllViews();
@@ -276,6 +276,11 @@ namespace ChairFarming.Runtime.Battle
 
             RegenerateOffers();
             RefreshAllViews();
+
+            if (_economyService.IsDefeated(_state))
+            {
+                ShowDefeatWindow();
+            }
         }
 
         private void HandleOfferHovered(BallDefinition ball)

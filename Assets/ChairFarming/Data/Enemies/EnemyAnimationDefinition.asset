@@ -16,7 +16,6 @@ MonoBehaviour:
     id: idle
     frames:
     - {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-    - {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
     fps: 8
     loop: 1
   hit:

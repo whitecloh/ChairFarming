@@ -5,15 +5,27 @@ namespace ChairFarming.Runtime.Board
 {
     public sealed class HitCountPlanner
     {
-        public int SelectHitCount(BallDefinition ball, float launchNormalizedX, System.Random random)
+        public int SelectHitCount(BoardView boardView, GameBalanceConfig balanceConfig, float launchNormalizedX, System.Random random)
         {
+            int boardRowCount = boardView != null && boardView.Rows != null
+                ? boardView.Rows.Count
+                : 0;
+
+            int minimumHits = balanceConfig.UseBoardRowCountAsMinimumHits
+                ? Mathf.Max(1, boardRowCount)
+                : Mathf.Max(1, balanceConfig.MinimumHitsOverride);
+
             float centerBias = 1f - Mathf.Abs(launchNormalizedX - 0.5f) * 2f;
-            int centerBonus = Mathf.RoundToInt(Mathf.Lerp(-2f, 3f, centerBias));
 
-            int min = Mathf.Max(2, ball.MinHits + Mathf.Min(0, centerBonus));
-            int max = Mathf.Max(min, ball.MaxHits + Mathf.Max(0, centerBonus));
+            int extraMin = Mathf.Max(0, balanceConfig.MinimumExtraBounces);
+            int extraMax = Mathf.Max(extraMin, balanceConfig.MaximumExtraBounces);
 
-            return random.Next(min, max + 1);
+            int centerBonus = Mathf.RoundToInt(Mathf.Lerp(0f, 2f, centerBias));
+            extraMax = Mathf.Max(extraMin, extraMax + centerBonus);
+
+            int extraBounces = random.Next(extraMin, extraMax + 1);
+
+            return minimumHits + extraBounces;
         }
     }
 }

@@ -34,10 +34,7 @@ namespace ChairFarming.Runtime.Board
             IReadOnlyList<List<BoardPinPoint>> rows = boardView.Rows;
             FingerSlotView targetFinger = boardView.GetFingerSlot(targetFingerIndex);
 
-            Vector2 startPoint = boardView.PreviewSpawnAnchor != null
-                ? boardView.PreviewSpawnAnchor.position
-                : boardView.GetLaunchWorldPosition(launchNormalizedX);
-
+            Vector2 startPoint = boardView.GetLaunchWorldPosition(launchNormalizedX);
             plan.Points.Add(new RoutePoint(startPoint, RoutePointType.Move));
 
             if (rows == null || rows.Count == 0 || targetFinger == null)
@@ -51,60 +48,104 @@ namespace ChairFarming.Runtime.Board
                 return plan;
             }
 
-            int safeHitCount = Mathf.Clamp(targetHitCount, 2, Mathf.Max(2, rows.Count - 2));
-            List<int> selectedRows = PickImpactRows(rows.Count, safeHitCount);
+            int[] impactsPerRow = BuildImpactDistribution(rows.Count, targetHitCount, random);
 
             Vector2 currentPosition = startPoint;
             float targetFingerX = targetFinger.LandingPoint.position.x;
 
-            for (int impactIndex = 0; impactIndex < selectedRows.Count; impactIndex++)
+            int passedRows = 0;
+            int totalRows = rows.Count;
+
+            for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
             {
-                int rowIndex = selectedRows[impactIndex];
                 List<BoardPinPoint> row = rows[rowIndex];
                 if (row == null || row.Count == 0)
                 {
                     continue;
                 }
 
-                float t = (impactIndex + 1f) / (selectedRows.Count + 1f);
-                float desiredX = Mathf.Lerp(startPoint.x, targetFingerX, t);
+                int rowImpacts = Mathf.Max(1, impactsPerRow[rowIndex]);
 
-                float noise = ((float)random.NextDouble() * 2f - 1f) * _balanceConfig.RouteNoise * (1f - t * 0.55f);
+                float rowProgress = totalRows > 1
+                    ? passedRows / (float)(totalRows - 1)
+                    : 1f;
+
+                float guidedTargetX = Mathf.Lerp(startPoint.x, targetFingerX, rowProgress);
+
+                float earlyFreedom = Mathf.Lerp(0.15f, 1f, rowProgress);
+                float desiredX = Mathf.Lerp(currentPosition.x, guidedTargetX, earlyFreedom);
+
+                float noiseStrength = Mathf.Lerp(1.35f, 0.55f, rowProgress);
+                float noise = ((float)random.NextDouble() * 2f - 1f) * _balanceConfig.RouteNoise * noiseStrength;
                 desiredX += noise;
 
                 BoardPinPoint chosenPin = PickBestPin(row, currentPosition.x, desiredX);
 
-                float nextDesiredX = impactIndex == selectedRows.Count - 1
+                float nextDesiredX = rowIndex >= rows.Count - 1
                     ? targetFingerX
-                    : Mathf.Lerp(startPoint.x, targetFingerX, (impactIndex + 2f) / (selectedRows.Count + 1f));
+                    : Mathf.Lerp(startPoint.x, targetFingerX, (passedRows + 1f) / Mathf.Max(1f, totalRows - 1f));
 
                 int direction = nextDesiredX >= chosenPin.WorldPosition.x ? 1 : -1;
 
                 Vector2 driftPoint = new Vector2(
-                    Mathf.Lerp(currentPosition.x, chosenPin.WorldPosition.x, 0.42f),
-                    chosenPin.WorldPosition.y + 0.42f);
+                    Mathf.Lerp(currentPosition.x, chosenPin.WorldPosition.x, 0.25f),
+                    chosenPin.WorldPosition.y + 0.70f);
 
-                Vector2 approach = chosenPin.WorldPosition + new Vector2(-direction * 0.14f, 0.16f);
-                Vector2 impact = chosenPin.WorldPosition + new Vector2(-direction * 0.02f, 0.03f);
-                Vector2 exit = chosenPin.WorldPosition + new Vector2(direction * 0.16f, -0.15f);
+                Vector2 firstApproach = chosenPin.WorldPosition + new Vector2(-direction * 0.10f, 0.16f);
 
                 if (Vector2.Distance(currentPosition, driftPoint) > 0.01f)
                 {
                     plan.Points.Add(new RoutePoint(driftPoint, RoutePointType.Move));
                 }
 
-                if (Vector2.Distance(driftPoint, approach) > 0.01f)
+                if (Vector2.Distance(driftPoint, firstApproach) > 0.01f)
                 {
-                    plan.Points.Add(new RoutePoint(approach, RoutePointType.Move));
+                    plan.Points.Add(new RoutePoint(firstApproach, RoutePointType.Move));
                 }
 
-                plan.Points.Add(new RoutePoint(impact, RoutePointType.PinImpact, chosenPin.PinId));
-                plan.Points.Add(new RoutePoint(exit, RoutePointType.Move));
+                for (int localImpactIndex = 0; localImpactIndex < rowImpacts; localImpactIndex++)
+                {
+                    Vector2 impact = chosenPin.WorldPosition + new Vector2(-direction * 0.008f, 0.008f);
+                    plan.Points.Add(new RoutePoint(impact, RoutePointType.PinImpact, chosenPin.PinId));
 
-                currentPosition = exit;
+                    bool isLastImpactOnRow = localImpactIndex >= rowImpacts - 1;
+                    if (isLastImpactOnRow)
+                    {
+                        Vector2 rebound = chosenPin.WorldPosition + new Vector2(
+                            direction * _balanceConfig.PinReboundSideOffset,
+                            _balanceConfig.PinReboundHeight);
+
+                        Vector2 exit = chosenPin.WorldPosition + new Vector2(
+                            direction * _balanceConfig.PinReboundExitSideOffset,
+                            -_balanceConfig.PinReboundExitDrop);
+
+                        plan.Points.Add(new RoutePoint(rebound, RoutePointType.Move));
+                        plan.Points.Add(new RoutePoint(exit, RoutePointType.Move));
+                        currentPosition = exit;
+                    }
+                    else
+                    {
+                        float repeatedHeight = _balanceConfig.PinReboundHeight + 0.03f * localImpactIndex;
+
+                        Vector2 reboundUp = chosenPin.WorldPosition + new Vector2(
+                            direction * (_balanceConfig.PinReboundSideOffset * 0.75f),
+                            repeatedHeight);
+
+                        Vector2 reApproach = chosenPin.WorldPosition + new Vector2(
+                            -direction * 0.07f,
+                            0.10f);
+
+                        plan.Points.Add(new RoutePoint(reboundUp, RoutePointType.Move));
+                        plan.Points.Add(new RoutePoint(reApproach, RoutePointType.Move));
+
+                        currentPosition = reApproach;
+                    }
+                }
+
+                passedRows++;
             }
 
-            Vector2 preFinger = (Vector2)targetFinger.EntryPoint.position + new Vector2(0f, 0.28f);
+            Vector2 preFinger = (Vector2)targetFinger.EntryPoint.position + new Vector2(0f, 0.22f);
             Vector2 fingerEntry = targetFinger.EntryPoint.position;
             Vector2 fingerLand = targetFinger.LandingPoint.position;
 
@@ -115,37 +156,48 @@ namespace ChairFarming.Runtime.Board
             return plan;
         }
 
-        private static List<int> PickImpactRows(int totalRows, int targetHitCount)
+        private static int[] BuildImpactDistribution(int rowCount, int targetHitCount, System.Random random)
         {
-            List<int> result = new List<int>(Mathf.Max(0, targetHitCount));
-            if (targetHitCount <= 0 || totalRows <= 0)
+            int safeRowCount = Mathf.Max(1, rowCount);
+            int safeTargetHitCount = Mathf.Max(safeRowCount, targetHitCount);
+
+            int[] impactsPerRow = new int[safeRowCount];
+
+            for (int i = 0; i < safeRowCount; i++)
             {
-                return result;
+                impactsPerRow[i] = 1;
             }
 
-            int firstUsableRow = Mathf.Min(1, totalRows - 1);
-            int lastUsableRow = Mathf.Max(firstUsableRow, totalRows - 2);
+            int extraHits = safeTargetHitCount - safeRowCount;
 
-            float step = targetHitCount > 1
-                ? (lastUsableRow - firstUsableRow) / (float)(targetHitCount - 1)
-                : 0f;
-
-            int lastRow = -1;
-
-            for (int i = 0; i < targetHitCount; i++)
+            for (int i = 0; i < extraHits; i++)
             {
-                int row = Mathf.Clamp(Mathf.RoundToInt(firstUsableRow + step * i), firstUsableRow, lastUsableRow);
-
-                if (row <= lastRow)
-                {
-                    row = Mathf.Min(lastUsableRow, lastRow + 1);
-                }
-
-                result.Add(row);
-                lastRow = row;
+                int selectedRow = PickExtraBounceRow(safeRowCount, random);
+                impactsPerRow[selectedRow]++;
             }
 
-            return result;
+            return impactsPerRow;
+        }
+
+        private static int PickExtraBounceRow(int rowCount, System.Random random)
+        {
+            if (rowCount <= 1)
+            {
+                return 0;
+            }
+
+            List<float> weights = new List<float>(rowCount);
+
+            for (int i = 0; i < rowCount; i++)
+            {
+                float normalized = rowCount > 1 ? i / (float)(rowCount - 1) : 0f;
+                float centerBias = 1f - Mathf.Abs(normalized - 0.5f) * 2f;
+                float lowerBias = Mathf.Lerp(0.8f, 1.25f, normalized);
+
+                weights.Add(Mathf.Max(0.05f, 0.7f + centerBias * 0.6f + lowerBias));
+            }
+
+            return WeightedRandomUtility.PickIndex(weights, random);
         }
 
         private static BoardPinPoint PickBestPin(List<BoardPinPoint> row, float currentX, float desiredX)
@@ -157,7 +209,7 @@ namespace ChairFarming.Runtime.Board
             {
                 float score =
                     Mathf.Abs(row[i].WorldPosition.x - desiredX) +
-                    Mathf.Abs(row[i].WorldPosition.x - currentX) * 0.22f;
+                    Mathf.Abs(row[i].WorldPosition.x - currentX) * 0.12f;
 
                 if (score < bestScore)
                 {

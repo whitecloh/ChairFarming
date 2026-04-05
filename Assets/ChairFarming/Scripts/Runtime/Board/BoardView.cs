@@ -165,7 +165,7 @@ namespace ChairFarming.Runtime.Board
             }
         }
 
-        public void ShowAimingBall(BallDefinition ball, float normalizedX)
+        public void ShowAimingBall(BallDefinition ball, float normalizedX, GameBalanceConfig balanceConfig)
         {
             EnsureAimBall();
 
@@ -174,7 +174,7 @@ namespace ChairFarming.Runtime.Board
                 return;
             }
 
-            _aimBall.Initialize(ball);
+            _aimBall.Initialize(ball, balanceConfig);
             _aimBall.gameObject.SetActive(true);
             UpdateAimPosition(normalizedX);
         }

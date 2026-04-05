@@ -15,8 +15,7 @@ MonoBehaviour:
   idle:
     id: idle
     frames:
-    - {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
-    - {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     fps: 8
     loop: 1
   hit:
@@ -28,6 +27,6 @@ MonoBehaviour:
   highlight:
     id: highlight
     frames:
-    - {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     fps: 8
     loop: 0
