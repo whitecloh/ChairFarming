@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GameBalanceConfig
   m_EditorClassIdentifier: 
   offerCount: 3
-  rerollBaseCost: 1
+  rerollBaseCost: 10
   maxMoney: 999
   comboThreshold: 20
   comboMultiplier: 3
