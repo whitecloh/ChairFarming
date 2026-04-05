@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8af3c692d46956d4c8894f5d3d4fe30e, type: 3}
+  m_Name: Enemy_10
+  m_EditorClassIdentifier: 
+  id: ENEMY_10
+  displayName: Office Demon 5
+  maxHp: 300
+  icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  bodySprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  animationDefinition: {fileID: 11400000, guid: 5ecd039a24286db458fe51aee08705c4, type: 2}
+  fingerSet: {fileID: 11400000, guid: 6eef472426858f0458cf4874e7af7a5e, type: 2}

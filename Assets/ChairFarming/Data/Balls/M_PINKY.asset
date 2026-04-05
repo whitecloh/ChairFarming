@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acf6438a6c746d45b5903d17a47c354, type: 3}
+  m_Name: M_PINKY
+  m_EditorClassIdentifier: 
+  id: M_PINKY
+  displayName: Pinky Farmer
+  shortEffectText: +1 per hit
+  description: 1$ per hit. Pinky x3.
+  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  flyingSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  category: 0
+  cost: 6
+  weight: 4
+  valuePerHit: 1
+  usesFingerMultiplier: 1
+  enabledInOfferPool: 1
+  minHits: 3
+  maxHits: 5
+  bucketBias:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  procChance: 0.25
+  procMultiplier: 2
+  toeBonusType: 2
+  toeBonusMultiplier: 3
+  footBonusSide: 0
+  footBonusMultiplier: 1
+  specialMode: 0
+  specialIntValue: 0

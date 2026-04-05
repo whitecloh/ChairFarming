@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c63ca0cd601ce6d44bc60badeece1ad2, type: 3}
+  m_Name: Location_01_Backyard
+  m_EditorClassIdentifier: 
+  id: LOCATION_01
+  displayName: Location 1 - Backyard
+  theme: {fileID: 11400000, guid: 6b001979bec0224449ccdb14376011d7, type: 2}
+  startMoney: 10
+  enemies:
+  - {fileID: 11400000, guid: df915224197e0cb469c4d059329663d7, type: 2}
+  - {fileID: 11400000, guid: d27349d76b574ee41b8e5679dc4f4cdc, type: 2}
+  - {fileID: 11400000, guid: b63e7733b41eaef42b92404f2ddca744, type: 2}
+  - {fileID: 11400000, guid: 38766bbd5109e7e4e9813d2ea2660925, type: 2}
+  - {fileID: 11400000, guid: 43cfbe7b1fb491b47ba260c73c07edab, type: 2}
