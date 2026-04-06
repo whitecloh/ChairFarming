@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Bankrupt Bludgeon
   shortEffectText: +1 per hit
   description: Lose 1$ per hit. Deal hits x toe x 5.
-  icon: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
-  flyingSprite: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
+  icon: {fileID: 21300000, guid: ab0b094ebac6be74789ce87b6fe7d2f6, type: 3}
+  flyingSprite: {fileID: 21300000, guid: ab0b094ebac6be74789ce87b6fe7d2f6, type: 3}
   category: 1
   cost: 20
   weight: 5

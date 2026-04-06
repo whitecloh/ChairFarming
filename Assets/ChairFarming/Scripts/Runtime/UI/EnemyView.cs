@@ -10,7 +10,6 @@ namespace ChairFarming.Runtime.UI
     {
         [Header("UI")]
         [SerializeField] private Image bodyImage;
-        [SerializeField] private Image iconImage;
         [SerializeField] private TextMeshProUGUI nameText;
         [SerializeField] private Image hpFillImage;
         [SerializeField] private TextMeshProUGUI hpText;
@@ -33,11 +32,6 @@ namespace ChairFarming.Runtime.UI
             if (bodyImage != null)
             {
                 bodyImage.sprite = enemy.BodySprite;
-            }
-
-            if (iconImage != null)
-            {
-                iconImage.sprite = enemy.Icon != null ? enemy.Icon : enemy.BodySprite;
             }
 
             if (nameText != null)

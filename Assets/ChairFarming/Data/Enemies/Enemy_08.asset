@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Enemy_08
   m_EditorClassIdentifier: 
   id: ENEMY_08
-  displayName: Mishutka
-  maxHp: 1000
-  icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  bodySprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
-  animationDefinition: {fileID: 11400000, guid: 5ecd039a24286db458fe51aee08705c4, type: 2}
-  fingerSet: {fileID: 11400000, guid: 6eef472426858f0458cf4874e7af7a5e, type: 2}
+  displayName: EL
+  maxHp: 1500
+  icon: {fileID: -1720549245, guid: bdeb6a450f2f3614e97e6c097733d918, type: 3}
+  bodySprite: {fileID: -1720549245, guid: bdeb6a450f2f3614e97e6c097733d918, type: 3}
+  animationDefinition: {fileID: 11400000, guid: ffeda3c749182b740992703e84159865, type: 2}
+  fingerSet: {fileID: 11400000, guid: f8b3824f913c9a24b81c851a659c1830, type: 2}

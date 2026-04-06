@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e29964d3da34867be188f9811e5d909, type: 3}
+  m_Name: Oboroten_Definition
+  m_EditorClassIdentifier: 
+  idle:
+    id: idle
+    frames:
+    - {fileID: 863908810, guid: e373922251d59e342b64e62fed69eff9, type: 3}
+    fps: 8
+    loop: 1
+  hit:
+    id: hit
+    frames:
+    - {fileID: -1938234499, guid: e373922251d59e342b64e62fed69eff9, type: 3}
+    fps: 8
+    loop: 0
+  death:
+    id: death
+    frames:
+    - {fileID: 1799789423, guid: e373922251d59e342b64e62fed69eff9, type: 3}
+    fps: 8
+    loop: 0

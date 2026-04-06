@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Right Foot Millionaire
   shortEffectText: +1 per hit
   description: 2$ per hit. Right foot x2.
-  icon: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
-  flyingSprite: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
+  icon: {fileID: 21300000, guid: a8d12efbf6364bd419ca4c9bcd465951, type: 3}
+  flyingSprite: {fileID: 21300000, guid: a8d12efbf6364bd419ca4c9bcd465951, type: 3}
   category: 0
   cost: 50
   weight: 2

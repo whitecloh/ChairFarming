@@ -17,16 +17,16 @@ namespace ChairFarming.Runtime.Battle
         [SerializeField] private BattleHudView hudView;
         [SerializeField] private OfferPanelView offerPanelView;
         [SerializeField] private BallTooltipView tooltipView;
-        [SerializeField] private ResultPopupView resultPopupView;
+        [SerializeField] private BattleLogView battleLogView;
         [SerializeField] private LocationProgressBarView progressBarView;
         [SerializeField] private ScreenBlockerView screenBlockerView;
         [SerializeField] private EnemyDeathWindowView enemyDeathWindowView;
         [SerializeField] private LocationEndWindowView locationEndWindowView;
         [SerializeField] private LostWindowView lostWindowView;
+
+        [Header("Additional")]
         [SerializeField] private FlightCounterView flightCounterView;
         [SerializeField] private ResultFlyoutPresenter resultFlyoutPresenter;
-
-        [Header("Audio")]
         [SerializeField] private AudioCueLibrary audioCueLibrary;
 
         private BattleFlowController _battleFlowController;
@@ -52,7 +52,6 @@ namespace ChairFarming.Runtime.Battle
                 BalanceConfig = session.ProjectDatabase.GameBalanceConfig,
                 Location = session.GetSelectedLocation(),
                 RunProgressService = new RunProgressService(),
-                AudioCueLibrary = audioCueLibrary,
                 BoardView = boardView,
                 BoardInput = boardViewportInput,
                 ImpactPresenter = impactPresenter,
@@ -60,7 +59,7 @@ namespace ChairFarming.Runtime.Battle
                 HudView = hudView,
                 OfferPanelView = offerPanelView,
                 TooltipView = tooltipView,
-                ResultPopupView = resultPopupView,
+                BattleLogView = battleLogView,
                 ProgressBarView = progressBarView,
                 ScreenBlockerView = screenBlockerView,
                 EnemyDeathWindowView = enemyDeathWindowView,
@@ -68,6 +67,7 @@ namespace ChairFarming.Runtime.Battle
                 LostWindowView = lostWindowView,
                 FlightCounterView = flightCounterView,
                 ResultFlyoutPresenter = resultFlyoutPresenter,
+                AudioCueLibrary = audioCueLibrary,
             };
 
             if (!ValidateContext(context))
@@ -94,14 +94,12 @@ namespace ChairFarming.Runtime.Battle
                 context.EnemyView != null &&
                 context.HudView != null &&
                 context.OfferPanelView != null &&
-                context.ResultPopupView != null &&
+                context.BattleLogView != null &&
                 context.ProgressBarView != null &&
                 context.ScreenBlockerView != null &&
                 context.EnemyDeathWindowView != null &&
                 context.LocationEndWindowView != null &&
                 context.LostWindowView != null &&
-                context.FlightCounterView != null &&
-                context.ResultFlyoutPresenter != null &&
                 context.Database != null &&
                 context.BalanceConfig != null &&
                 context.Location != null;

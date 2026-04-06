@@ -1,18 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace ChairFarming.Runtime.UI
 {
     public sealed class LocationProgressBarView : MonoBehaviour
     {
         [SerializeField] private Transform dotRoot;
-        [SerializeField] private Image dotPrefab;
-        [SerializeField] private Color completedColor = Color.white;
-        [SerializeField] private Color currentColor = Color.black;
-        [SerializeField] private Color pendingColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+        [SerializeField] private LocationProgressBarViewItem dotPrefab;
+        [SerializeField] private Sprite completedColor;
+        [SerializeField] private Sprite currentColor;
+        [SerializeField] private Sprite pendingColor;
 
-        private readonly List<Image> _dots = new List<Image>();
+        private readonly List<LocationProgressBarViewItem> _dots = new List<LocationProgressBarViewItem>();
 
         public void Refresh(int totalLevels, int currentIndex)
         {
@@ -23,6 +22,8 @@ namespace ChairFarming.Runtime.UI
                 bool active = i < totalLevels;
                 _dots[i].gameObject.SetActive(active);
 
+                Sprite icon;
+
                 if (!active)
                 {
                     continue;
@@ -30,16 +31,18 @@ namespace ChairFarming.Runtime.UI
 
                 if (i < currentIndex)
                 {
-                    _dots[i].color = completedColor;
+                    icon = completedColor;
                 }
                 else if (i == currentIndex)
                 {
-                    _dots[i].color = currentColor;
+                    icon = currentColor;
                 }
                 else
                 {
-                    _dots[i].color = pendingColor;
+                    icon = pendingColor;
                 }
+                
+                _dots[i].Init(icon, i + 1);
             }
         }
 
@@ -52,7 +55,7 @@ namespace ChairFarming.Runtime.UI
 
             while (_dots.Count < totalLevels)
             {
-                Image dot = Instantiate(dotPrefab, dotRoot);
+                LocationProgressBarViewItem dot = Instantiate(dotPrefab, dotRoot);
                 _dots.Add(dot);
             }
 

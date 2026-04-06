@@ -20,6 +20,7 @@ namespace ChairFarming.Runtime.Battle
         private System.Random _random;
         private Coroutine _advanceRoutine;
         private int _flightGatePassCount;
+        private int _turnCounter;
 
         public void Initialize(BattleContext context)
         {
@@ -59,11 +60,17 @@ namespace ChairFarming.Runtime.Battle
         private void StartLocation()
         {
             _state.CurrentEnemyIndex = 0;
+            _turnCounter = 0;
 
             _state.CurrentMoney = Mathf.Clamp(
                 _context.Location != null ? _context.Location.StartMoney : 0,
                 0,
                 _context.BalanceConfig.MaxMoney);
+
+            if (_context.BattleLogView != null)
+            {
+                _context.BattleLogView.Clear();
+            }
 
             StartEnemyBattle();
         }
@@ -123,7 +130,7 @@ namespace ChairFarming.Runtime.Battle
 
             _context.BoardView.ShowAimingBall(ball, _state.CurrentAimNormalizedX, _context.BalanceConfig);
             _context.BoardInput.SetInteractable(true);
-            _context.ScreenBlockerView.Show("Кликни по полю, чтобы сбросить шар");
+            _context.ScreenBlockerView.Show("Click on the game board to drop the chair");
             RefreshAllViews();
         }
 
@@ -145,6 +152,7 @@ namespace ChairFarming.Runtime.Battle
                 return;
             }
 
+            _turnCounter++;
             _flightGatePassCount = 0;
             _context.FlightCounterView.Show();
 
@@ -153,7 +161,7 @@ namespace ChairFarming.Runtime.Battle
             _state.IsDropInProgress = true;
 
             _context.BoardInput.SetInteractable(false);
-            _context.ScreenBlockerView.Show("Шар в полёте");
+            _context.ScreenBlockerView.Show("Waiting...");
 
             _state.PlannedDrop = _dropPlannerService.BuildPlan(
                 _context.BoardView,
@@ -212,7 +220,12 @@ namespace ChairFarming.Runtime.Battle
             _state.LastResolution = resolution;
             _economyService.ApplyResolution(_state, resolution);
 
-            _context.ResultPopupView.Show(resolution, _context.BalanceConfig.ResultPopupDuration);
+            if (_context.BattleLogView != null)
+            {
+                string ballName = _state.SelectedBall != null ? _state.SelectedBall.DisplayName : "Unknown Ball";
+                _context.BattleLogView.AddTurnResult(_turnCounter, ballName, resolution);
+            }
+
             _context.EnemyView.RefreshHp(GetCurrentEnemy(), _state.CurrentEnemyHp);
             _context.EnemyView.PlayHitOrDeath(_state.CurrentEnemyHp <= 0);
 
@@ -245,13 +258,13 @@ namespace ChairFarming.Runtime.Battle
             RegenerateOffers();
             RefreshAllViews();
 
+            ResetTransientUi();
+
             if (_economyService.IsDefeated(_state))
             {
                 ShowDefeatWindow();
                 yield break;
             }
-
-            ResetTransientUi();
         }
 
         private void ShowEnemyOrLocationCompleteWindow()
@@ -403,7 +416,6 @@ namespace ChairFarming.Runtime.Battle
             _context.BoardView.HideAimBall();
             _context.BoardView.ResetFingerPresentation();
             _context.ScreenBlockerView.Hide();
-            _context.ResultPopupView.HideImmediate();
             _context.EnemyDeathWindowView.HideImmediate();
             _context.LocationEndWindowView.HideImmediate();
             _context.LostWindowView.HideImmediate();

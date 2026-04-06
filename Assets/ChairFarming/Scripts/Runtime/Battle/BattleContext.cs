@@ -11,7 +11,6 @@ namespace ChairFarming.Runtime.Battle
         public GameBalanceConfig BalanceConfig;
         public LocationDefinition Location;
         public RunProgressService RunProgressService;
-        public AudioCueLibrary AudioCueLibrary;
 
         public BoardView BoardView;
         public BoardViewportInput BoardInput;
@@ -20,13 +19,15 @@ namespace ChairFarming.Runtime.Battle
         public BattleHudView HudView;
         public OfferPanelView OfferPanelView;
         public BallTooltipView TooltipView;
-        public ResultPopupView ResultPopupView;
+        public BattleLogView BattleLogView;
         public LocationProgressBarView ProgressBarView;
         public ScreenBlockerView ScreenBlockerView;
         public EnemyDeathWindowView EnemyDeathWindowView;
         public LocationEndWindowView LocationEndWindowView;
         public LostWindowView LostWindowView;
+
         public FlightCounterView FlightCounterView;
         public ResultFlyoutPresenter ResultFlyoutPresenter;
+        public AudioCueLibrary AudioCueLibrary;
     }
 }

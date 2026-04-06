@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Location_01_Backyard
   m_EditorClassIdentifier: 
   id: LOCATION_01
-  displayName: Location 1 - Backyard
+  displayName: Backyard
   theme: {fileID: 11400000, guid: 6b001979bec0224449ccdb14376011d7, type: 2}
   startMoney: 200
   enemies:

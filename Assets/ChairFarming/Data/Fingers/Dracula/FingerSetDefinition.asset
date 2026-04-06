@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c7b64ef7e11430080b2a8d8e27a9c84, type: 3}
+  m_Name: FingerSetDefinition
+  m_EditorClassIdentifier: 
+  fingers:
+  - {fileID: 11400000, guid: 3d038002a7afeb44d8e7695b3e93a75e, type: 2}
+  - {fileID: 11400000, guid: 0b715eca2665f7d4dac65e1ac3f71b8e, type: 2}
+  - {fileID: 11400000, guid: 805c78620aa3c3e47b1a8de13f5e29a1, type: 2}
+  - {fileID: 11400000, guid: 86cb150493f9ae543b6814af53abb218, type: 2}
+  - {fileID: 11400000, guid: 0da47d8116e0a8144879c9b1e598fe7a, type: 2}
+  - {fileID: 11400000, guid: 8640cf42aa52a5443bd6ae34ee39162f, type: 2}
+  - {fileID: 11400000, guid: 8a22399c3416d5245af34911342dd745, type: 2}
+  - {fileID: 11400000, guid: 939b3fc4b51b9e446a09c286cb3ea451, type: 2}
+  - {fileID: 11400000, guid: 8891a4c02e7ad2f408578ffd639d6baa, type: 2}
+  - {fileID: 11400000, guid: c8d9787add5d6f042bc1442a9ac7b752, type: 2}

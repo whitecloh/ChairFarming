@@ -13,30 +13,7 @@ namespace ChairFarming.Runtime.UI
 
         public void PlayFromWorldToUi(Vector3 worldStart, RectTransform target, string text)
         {
-            if (canvasRoot == null || floatingTextPrefab == null || target == null)
-            {
-                return;
-            }
-
-            Vector2 startAnchored;
-            Vector2 targetAnchored;
-
-            if (!TryWorldToCanvasPosition(worldStart, out startAnchored))
-            {
-                return;
-            }
-
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRoot,
-                    RectTransformUtility.WorldToScreenPoint(null, target.position),
-                    null,
-                    out targetAnchored))
-            {
-                return;
-            }
-
-            startAnchored += startScreenOffset;
-            StartCoroutine(PlayRoutine(startAnchored, targetAnchored, text));
+            PlayFromUiToUi(target, target, text);
         }
 
         public void PlayFromUiToUi(RectTransform start, RectTransform target, string text)
@@ -51,7 +28,7 @@ namespace ChairFarming.Runtime.UI
 
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     canvasRoot,
-                    RectTransformUtility.WorldToScreenPoint(null, start.position),
+                    RectTransformUtility.WorldToScreenPoint(null, target.position),
                     null,
                     out startAnchored))
             {
@@ -60,7 +37,7 @@ namespace ChairFarming.Runtime.UI
 
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     canvasRoot,
-                    RectTransformUtility.WorldToScreenPoint(null, target.position),
+                    RectTransformUtility.WorldToScreenPoint(null, target.position + new Vector3(0,50,0)),
                     null,
                     out targetAnchored))
             {

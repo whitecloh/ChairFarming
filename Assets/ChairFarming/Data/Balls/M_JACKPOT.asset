@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Gamble Throne
   shortEffectText: +1 per hit
   description: 3$ per hit. 50% chance x2.
-  icon: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
-  flyingSprite: {fileID: 21300000, guid: 97be3e87cd495ea4f9dd1274e2e35b80, type: 3}
+  icon: {fileID: 21300000, guid: a952839571fb743489507f799f63cc79, type: 3}
+  flyingSprite: {fileID: 21300000, guid: a952839571fb743489507f799f63cc79, type: 3}
   category: 0
   cost: 50
   weight: 6
